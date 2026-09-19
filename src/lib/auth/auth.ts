@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { RoleCode } from "@prisma/client";
 import { verifySessionToken, SESSION_COOKIE } from "./session";
@@ -67,4 +68,12 @@ export function isAdminRole(roleCode: RoleCode) {
 
 export function isOperatorRole(roleCode: RoleCode) {
   return roleCode === "OPERATOR" || isAdminRole(roleCode);
+}
+
+export function verifyCronSecret(req: NextRequest): boolean {
+  const isVercelCron = req.headers.get("x-vercel-cron") === "1";
+  if (isVercelCron) return true;
+  const secret = req.headers.get("x-cron-secret") ?? req.headers.get("authorization")?.replace("Bearer ", "");
+  const expected = process.env.CRON_SECRET;
+  return !!expected && secret === expected;
 }
