@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { buildShipmentNumber, DEMO_TRACKING_PREFIX } from "@/services/shipment-number";
+import { buildShipmentNumber, generateShipmentNumber, DEMO_TRACKING_PREFIX } from "@/services/shipment-number";
 import { normalizeTrackingInput, randomToken, sha256, formatWeight } from "@/lib/utils";
 
 describe("buildShipmentNumber", () => {
@@ -17,6 +17,18 @@ describe("buildShipmentNumber", () => {
   it("uses the current year by default", () => {
     const expected = `SHP-${new Date().getFullYear()}-000001`;
     assert.equal(buildShipmentNumber(1), expected);
+  });
+});
+
+describe("generateShipmentNumber", () => {
+  it("uses date + random suffix and does not expose a counter", () => {
+    const n = generateShipmentNumber(new Date("2026-09-19T12:00:00Z"));
+    assert.match(n, /^SHP-20260919-[A-HJ-NP-Z2-9]{5}$/);
+  });
+
+  it("is not sequential", () => {
+    const values = new Set(Array.from({ length: 50 }, () => generateShipmentNumber()));
+    assert.ok(values.size > 45);
   });
 });
 

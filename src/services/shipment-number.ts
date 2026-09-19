@@ -1,3 +1,4 @@
+import { randomInt } from "crypto";
 import { prisma } from "@/lib/db";
 import { randomToken } from "@/lib/utils";
 
@@ -13,21 +14,32 @@ export function buildShipmentNumber(value: number, year?: number): string {
   return `SHP-${y}-${String(value).padStart(6, "0")}`;
 }
 
+const SUFFIX_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
+
 /**
- * Atomically acquire the next shipment number for an organization.
- * Uses a row lock on a Counter row so concurrent creates do not collide.
+ * Non-sequential shipment number: SHP-20260919-K7M2Q (date + random suffix).
+ * It does not expose how many shipments exist.
  */
-export async function nextShipmentNumber(organizationId: string): Promise<string> {
-  const year = new Date().getFullYear();
-  const counterName = `shipment-${year}`;
+export function generateShipmentNumber(date: Date = new Date()): string {
+  const ymd = date.toISOString().slice(0, 10).replace(/-/g, "");
+  let suffix = "";
+  for (let i = 0; i < 5; i++) {
+    suffix += SUFFIX_ALPHABET[randomInt(SUFFIX_ALPHABET.length)];
+  }
+  return `SHP-${ymd}-${suffix}`;
+}
 
-  const counter = await prisma.counter.upsert({
-    where: { organizationId_name: { organizationId, name: counterName } },
-    update: { value: { increment: 1 } },
-    create: { organizationId, name: counterName, value: 1 },
-  });
-
-  return buildShipmentNumber(counter.value, year);
+/**
+ * Acquire a unique shipment number for an organization (random, retried on the
+ * unlikely event of a collision).
+ */
+export async function nextShipmentNumber(_organizationId: string): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate = generateShipmentNumber();
+    const taken = await prisma.shipment.findUnique({ where: { shipmentNumber: candidate }, select: { id: true } });
+    if (!taken) return candidate;
+  }
+  throw new Error("Could not allocate a unique shipment number");
 }
 
 /**
