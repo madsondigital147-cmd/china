@@ -12,6 +12,9 @@ export interface CreateShipmentContext {
   isDemo?: boolean;
 }
 
+/** Estimated delivery is always this many days after the shipment is created. */
+export const ESTIMATED_DELIVERY_DAYS = 10;
+
 export class ShipmentError extends Error {
   constructor(
     message: string,
@@ -91,6 +94,7 @@ export async function createShipment(input: CreateShipmentInput, ctx: CreateShip
         serviceId: service?.id ?? null,
         shippingMethod: data.service?.shippingMethod ?? null,
         isPriority: data.service?.isPriority ?? false,
+        estimatedDeliveryEnd: new Date(Date.now() + ESTIMATED_DELIVERY_DAYS * 24 * 60 * 60 * 1000),
         reference: data.reference ?? null,
         customerOrderId: data.customerOrderId ?? null,
         isDemo: ctx.isDemo ?? carrier?.isDemo ?? false,
@@ -140,6 +144,7 @@ export async function getShipmentByTracking(trackingNumber: string) {
       carrier: true,
       service: true,
       customer: true,
+      items: { orderBy: { createdAt: "asc" } },
       events: { orderBy: { occurredAt: "asc" } },
     },
   });

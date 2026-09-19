@@ -147,13 +147,24 @@ export default async function TrackingResultPage({ params }: Props) {
               <Detail label="Carrier" value={shipment.carrier?.name ?? "—"} />
               <Detail label="Service" value={shipment.service?.name ?? "—"} />
               <Detail label="Estimated delivery" value={formatEstimate(shipment.estimatedDeliveryEnd)} />
-              <Detail
-                label="Package"
-                value={shipment.packageData ? `${formatWeight(Number(shipment.packageData.weightKg))} · ${Number(shipment.packageData.lengthCm)}×${Number(shipment.packageData.widthCm)}×${Number(shipment.packageData.heightCm)} cm` : "—"}
-              />
+              {shipment.items[0]?.description && (
+                <Detail label="Product" value={maskName(shipment.items[0].description)} />
+              )}
+              {shipment.packageData && (
+                <Detail
+                  label="Package"
+                  value={`${formatWeight(Number(shipment.packageData.weightKg))} · ${Number(shipment.packageData.lengthCm)}×${Number(shipment.packageData.widthCm)}×${Number(shipment.packageData.heightCm)} cm`}
+                />
+              )}
               <Detail
                 label="Declared value"
-                value={shipment.packageData ? formatCurrency(Number(shipment.packageData.declaredValue), shipment.packageData.currency) : "—"}
+                value={
+                  shipment.packageData
+                    ? formatCurrency(Number(shipment.packageData.declaredValue), shipment.packageData.currency)
+                    : shipment.declaredValue
+                      ? formatCurrency(Number(shipment.declaredValue), shipment.currency ?? "BRL", "pt-BR")
+                      : "—"
+                }
               />
               <Detail label="Created" value={formatDate(shipment.createdAt)} />
             </CardContent>
@@ -195,13 +206,13 @@ export default async function TrackingResultPage({ params }: Props) {
     );
   }
 
-  // Public page: show only the first letter of each name part ("Thiago Rodrigues" -> "T***** R********").
+  // Public page: show only the first letter of each word ("Thiago Rodrigues" -> "T***** R********").
   function maskName(name: string | null | undefined) {
     if (!name) return "—";
     return name
       .trim()
       .split(/\s+/)
-      .map((part) => part[0] + "*".repeat(Math.max(part.length - 1, 1)))
+      .map((part) => (part.length <= 1 ? part : part[0] + "*".repeat(part.length - 1)))
       .join(" ");
   }
 
