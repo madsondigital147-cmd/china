@@ -153,14 +153,14 @@ export default async function TrackingResultPage({ params }: Props) {
               {shipment.packageData && (
                 <Detail
                   label="Package"
-                  value={`${formatWeight(Number(shipment.packageData.weightKg))} · ${Number(shipment.packageData.lengthCm)}×${Number(shipment.packageData.widthCm)}×${Number(shipment.packageData.heightCm)} cm`}
+                  value={`${formatWeight(Number(shipment.packageData.weightKg), localeFor(shipment.packageData.currency))} · ${dim(shipment.packageData.lengthCm)}×${dim(shipment.packageData.widthCm)}×${dim(shipment.packageData.heightCm)} cm`}
                 />
               )}
               <Detail
                 label="Declared value"
                 value={
                   shipment.packageData
-                    ? formatCurrency(Number(shipment.packageData.declaredValue), shipment.packageData.currency)
+                    ? formatCurrency(Number(shipment.packageData.declaredValue), shipment.packageData.currency, localeFor(shipment.packageData.currency))
                     : shipment.declaredValue
                       ? formatCurrency(Number(shipment.declaredValue), shipment.currency ?? "BRL", "pt-BR")
                       : "—"
@@ -204,6 +204,15 @@ export default async function TrackingResultPage({ params }: Props) {
         <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
       </div>
     );
+  }
+
+  // Brazilian formatting (comma decimals) for BRL shipments, English otherwise.
+  function localeFor(currency: string | null | undefined) {
+    return currency === "BRL" ? "pt-BR" : "en";
+  }
+
+  function dim(value: unknown) {
+    return Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
   }
 
   // Public page: show only the first letter of each word ("Thiago Rodrigues" -> "T***** R********").
