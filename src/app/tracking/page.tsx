@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { normalizeTrackingInput } from "@/lib/utils";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { Input } from "@/components/ui/field";
@@ -12,7 +14,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tracking" },
 };
 
-export default async function TrackingPage() {
+interface Props {
+  searchParams: Promise<{ trackingNumber?: string | string[] }>;
+}
+
+export default async function TrackingPage({ searchParams }: Props) {
+  const { trackingNumber } = await searchParams;
+  const code = normalizeTrackingInput(Array.isArray(trackingNumber) ? trackingNumber[0] ?? "" : trackingNumber ?? "");
+  if (code) redirect(`/tracking/${encodeURIComponent(code)}`);
+
   return (
     <div className="flex min-h-screen flex-col">
       <PublicHeader />
@@ -38,11 +48,6 @@ export default async function TrackingPage() {
               />
               <Btn type="submit" className="h-12 shrink-0">Track</Btn>
             </form>
-
-            <p className="mt-4 text-xs text-muted-foreground">
-              Try a demo number: <code className="rounded bg-muted px-1.5 py-0.5">DEMO-CN-100001</code>,{" "}
-              <code className="rounded bg-muted px-1.5 py-0.5">DEMO-CN-100002</code>
-            </p>
           </div>
         </section>
       </main>
