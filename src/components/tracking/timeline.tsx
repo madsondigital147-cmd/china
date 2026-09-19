@@ -62,6 +62,33 @@ interface TimelineEventItem {
   isCurrent?: boolean;
 }
 
+type Tone = "green" | "amber" | "red";
+
+const TONE_STYLES: Record<Tone, { node: string; label: string; line: string }> = {
+  green: {
+    node: "border-green-500 bg-green-500/10 text-green-600 dark:text-green-400",
+    label: "text-green-700 dark:text-green-400",
+    line: "bg-green-500/40",
+  },
+  amber: {
+    node: "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    label: "text-amber-700 dark:text-amber-400",
+    line: "bg-amber-500/40",
+  },
+  red: {
+    node: "border-red-500 bg-red-500/10 text-red-600 dark:text-red-400",
+    label: "text-red-700 dark:text-red-400",
+    line: "bg-red-500/40",
+  },
+};
+
+// Green = done, yellow = current step in progress, red = problem.
+function toneFor(status: ShipmentStatus, isCurrent: boolean): Tone {
+  if (status === "EXCEPTION" || status === "RETURNED" || status === "CANCELLED") return "red";
+  if (status === "DELIVERED") return "green";
+  return isCurrent ? "amber" : "green";
+}
+
 /**
  * Vertical tracking timeline — spec §14, §106.
  */
@@ -84,19 +111,18 @@ export function TrackingTimeline({
         const meta = STATUSES[event.status];
         const isCurrent = idx === currentIndex || event.isCurrent;
         const Icon = STATUS_ICONS[event.status] ?? Package;
+        const tone = TONE_STYLES[toneFor(event.status, !!isCurrent)];
         return (
           <li key={`${event.status}-${event.occurredAt.getTime()}-${idx}`} className="relative flex gap-4 pb-8 last:pb-0">
             {/* connector */}
             {idx < sorted.length - 1 && (
-              <span className="absolute left-[15px] top-9 bottom-0 w-px bg-border" aria-hidden />
+              <span className={cn("absolute left-[15px] top-9 bottom-0 w-0.5", TONE_STYLES.green.line)} aria-hidden />
             )}
             {/* node */}
             <span
               className={cn(
                 "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2",
-                isCurrent
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted-foreground",
+                tone.node,
               )}
             >
               <Icon className="h-4 w-4" aria-hidden />
@@ -104,7 +130,7 @@ export function TrackingTimeline({
             {/* content */}
             <div className="min-w-0 flex-1 pt-0.5">
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                <p className={cn("text-sm font-semibold", isCurrent ? "text-primary" : "text-foreground")}>
+                <p className={cn("text-sm font-semibold", tone.label)}>
                   {meta.label}
                 </p>
                 <time className="text-xs tabular-nums text-muted-foreground">
