@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #111827;
+    --card: #ffffff;
+    --card-foreground: #111827;
+    --muted: #f3f6fa;
+    --muted-foreground: #6b7280;
+    --border: #e5e7eb;
+    --input: #d1d5db;
+    --ring: #146ef5;
+    --primary: #146ef5;
+    --primary-foreground: #ffffff;
+    --secondary: #f3f6fa;
+    --secondary-foreground: #111827;
+    --accent: #eef4ff;
+    --accent-foreground: #105ad0;
+    --destructive: #e53935;
+    --destructive-foreground: #ffffff;
+    --sidebar: #071a2f;
+    --sidebar-foreground: #e5eef7;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: #071017;
+    --foreground: #e5eef7;
+    --card: #0d1a27;
+    --card-foreground: #e5eef7;
+    --muted: #101c2a;
+    --muted-foreground: #8fa3b8;
+    --border: #1c2c3e;
+    --input: #24374b;
+    --ring: #3b82f6;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: #14202f;
+    --secondary-foreground: #e5eef7;
+    --accent: #14233a;
+    --accent-foreground: #9cc4ff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --sidebar: #050f1a;
+    --sidebar-foreground: #b9cbe0;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  /* Focus visibility for accessibility (spec §109) */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Hide scrollbars in horizontal scrollers while keeping scrollability */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer components {
+  .container-app {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card-surface {
+    @apply rounded-card border bg-card text-card-foreground shadow-card;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lift hover:-translate-y-0.5;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-sm;
+  }
+  .btn-md {
+    @apply h-10 px-4 text-sm;
+  }
+  .btn-lg {
+    @apply h-12 px-6 text-base;
+  }
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-techblue-700;
+  }
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-border;
+  }
+  .btn-outline {
+    @apply border border-input bg-card hover:bg-muted text-foreground;
+  }
+  .btn-ghost {
+    @apply text-foreground hover:bg-muted;
+  }
+  .btn-destructive {
+    @apply bg-destructive text-destructive-foreground hover:bg-red-600;
+  }
+
+  .input {
+    @apply h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .label {
+    @apply text-sm font-medium text-foreground;
+  }
+  .label-muted {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+  .helptext {
+    @apply text-xs text-muted-foreground;
+  }
+  .error-text {
+    @apply text-xs font-medium text-destructive;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-md bg-muted;
+  }
+
+  .link {
+    @apply text-primary hover:underline underline-offset-4;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold tracking-tight sm:text-3xl;
+  }
+  .page-subtitle {
+    @apply mt-1.5 text-sm text-muted-foreground sm:text-base;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors;
+  }
+  .nav-item-active {
+    @apply bg-primary/10 text-primary;
+  }
+  .nav-item-inactive {
+    @apply text-muted-foreground hover:bg-muted hover:text-foreground;
+  }
+}
+
+/* Print styles for labels (spec §149) */
+@media print {
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-label {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  @page {
+    margin: 0.5cm;
+  }
+}
