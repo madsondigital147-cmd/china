@@ -143,6 +143,7 @@ export default async function TrackingResultPage({ params }: Props) {
                 label="Destination"
                 value={`${shipment.recipientAddress?.city ?? ""}, ${countryName(shipment.recipientAddress?.countryCode)}`}
               />
+              <Detail label="Recipient" value={maskName(shipment.recipientAddress?.name)} />
               <Detail label="Carrier" value={shipment.carrier?.name ?? "—"} />
               <Detail label="Service" value={shipment.service?.name ?? "—"} />
               <Detail label="Estimated delivery" value={formatEstimate(shipment.estimatedDeliveryEnd)} />
@@ -192,6 +193,16 @@ export default async function TrackingResultPage({ params }: Props) {
         <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
       </div>
     );
+  }
+
+  // Public page: show only the first letter of each name part ("Thiago Rodrigues" -> "T***** R********").
+  function maskName(name: string | null | undefined) {
+    if (!name) return "—";
+    return name
+      .trim()
+      .split(/\s+/)
+      .map((part) => part[0] + "*".repeat(Math.max(part.length - 1, 1)))
+      .join(" ");
   }
 
   function formatEstimate(date: Date | null | undefined) {
